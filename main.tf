@@ -87,7 +87,7 @@ resource "aws_security_group" "jumpbox_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${chomp(data.http.terraform_server_ip.body)}/32"]
+    cidr_blocks = ["${chomp(data.http.terraform_server_ip.response_body)}/32"]
   }
   egress {
     from_port   = 0
