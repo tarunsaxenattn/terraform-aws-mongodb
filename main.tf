@@ -11,6 +11,13 @@ data "http" "terraform_server_ip" {
 }
 
 #############################
+# Fetch VPC CIDR
+#############################
+data "aws_vpc" "mongodb_vpc" {
+  id = "${var.vpc_id}"
+}
+
+#############################
 # Key Pair
 #############################
 resource "aws_key_pair" "ssh_key" {
@@ -236,19 +243,19 @@ resource "aws_security_group" "mongo_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${aws_instance.jumpbox.private_ip}/32"]
+    cidr_blocks = ["${data.aws_vpc.mongodb_vpc.cidr_block}"]
   }
   ingress {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = ["${aws_instance.jumpbox.private_ip}/32"]
+    cidr_blocks = ["${data.aws_vpc.mongodb_vpc.cidr_block}"]
   }
   ingress {
     from_port   = -1
     to_port     = -1
     protocol = "icmp"
-    cidr_blocks = ["${aws_instance.jumpbox.private_ip}/32"]
+    cidr_blocks = ["${data.aws_vpc.mongodb_vpc.cidr_block}"]
   }
   egress {
     from_port   = 0
