@@ -20,9 +20,16 @@ data "aws_vpc" "mongodb_vpc" {
 #############################
 # Key Pair
 #############################
+resource "tls_private_key" "ssh_private_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
 resource "aws_key_pair" "ssh_key" {
   key_name   = "${var.key_name}"
-  public_key = "${file("~/.ssh/id_rsa.pub")}"
+  public_key = tls_private_key.ssh_private_key.public_key_openssh
+  provisioner "local-exec" { # This will create "mongodb.pem" where the terraform will run!!
+    command = "rm -f /tmp/mongodb.pem && echo '${tls_private_key.ssh_private_key.private_key_pem}' > /tmp/mongodb.pem"
+  }
 }
 
 #############################
@@ -68,17 +75,17 @@ resource "aws_instance" "jumpbox" {
   tags = {
     Name = "Jumpbox"
   }
-  provisioner "file" {
-    source      = "~/.ssh/id_rsa"
-    destination = "/home/ubuntu/id_rsa"
-    connection {
-      type         = "ssh"
-      user         = "ubuntu"
-      host         = "${self.public_ip}"
-      agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
-    }
-  }
+  #provisioner "file" {
+  #  source      = "${file("/tmp/mongodb.pem")}"
+  #  destination = "/home/ubuntu/mongodb.pem"
+  #  connection {
+  #    type         = "ssh"
+  #    user         = "ubuntu"
+  #    host         = "${self.public_ip}"
+  #    agent        = false
+  #    private_key  = tls_private_key.ssh_private_key.private_key_pem
+  #  }
+  #}
 }
 resource "aws_security_group" "jumpbox_sg" {
   name   = "Jumpbox_SG"
@@ -145,7 +152,7 @@ resource "aws_instance" "mongo_secondary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
@@ -158,7 +165,7 @@ resource "aws_instance" "mongo_secondary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
@@ -171,7 +178,7 @@ resource "aws_instance" "mongo_secondary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
@@ -204,7 +211,7 @@ resource "aws_instance" "mongo_primary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
@@ -217,7 +224,7 @@ resource "aws_instance" "mongo_primary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
@@ -230,7 +237,7 @@ resource "aws_instance" "mongo_primary" {
       user         = "ubuntu"
       host         = "${self.private_ip}"
       agent        = false
-      private_key  = "${file("~/.ssh/id_rsa")}"
+      private_key  = tls_private_key.ssh_private_key.private_key_pem
       bastion_host = "${aws_instance.jumpbox.public_ip}"
       bastion_user = "ubuntu"
     }
