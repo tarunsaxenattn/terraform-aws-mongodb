@@ -58,7 +58,7 @@ resource "aws_instance" "jumpbox" {
   ami                         = "ami-0149b2da6ceec4bb0"
   instance_type               = "${var.jumpbox_instance_type}"
   key_name                    = "${var.key_name}"
-  subnet_id                   = "${lookup(var.jumpbox_subnet_ids, var.region)}"
+  subnet_id                   = "${var.jumpbox_subnet_id}"
   associate_public_ip_address = true
   user_data                   = filebase64("${path.module}/jumpbox_userdata.sh")
   vpc_security_group_ids      = ["${aws_security_group.jumpbox_sg.id}"]
@@ -126,7 +126,7 @@ resource "aws_instance" "mongo_secondary" {
   ami                    = "ami-0149b2da6ceec4bb0"
   instance_type          = "${var.secondary_node_type}"
   key_name               = "${var.key_name}"
-  subnet_id              = "${lookup(var.mongo_subnet_ids, var.region)}"
+  subnet_id              = "${var.mongo_subnet_id}"
   user_data              = "${data.template_file.userdata.rendered}"
   vpc_security_group_ids = ["${aws_security_group.mongo_sg.id}"]
   iam_instance_profile   = "${aws_iam_instance_profile.mongo-instance-profile.name}"
@@ -185,7 +185,7 @@ resource "aws_instance" "mongo_primary" {
   ami                    = "ami-0149b2da6ceec4bb0"
   instance_type          = "${var.primary_node_type}"
   key_name               = "${var.key_name}"
-  subnet_id              = "${lookup(var.mongo_subnet_ids, var.region)}"
+  subnet_id              = "${var.mongo_subnet_id}"
   user_data              = "${data.template_file.userdata.rendered}"
   vpc_security_group_ids = ["${aws_security_group.mongo_sg.id}"]
   iam_instance_profile   = "${aws_iam_instance_profile.mongo-instance-profile.name}"
